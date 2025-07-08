@@ -1,0 +1,12 @@
+# Donly Project Overview
+
+> Donly is a platform that connects donors (subscribers) and streamers. Streamers specify their wishlist, and
+subscribers can send funds to support them using smart contracts on the Ethereum network.
+> The project includes a mini-app in Telegram with its own frontend, a backend written in Golang, and a Telegram bot
+written in Python that communicates with the Golang application via Redis streams. A light mode Geth node will be
+deployed for polling data from smart contracts, and traffic will be proxied through Traefik with automatic certificate
+management. The database is MongoDB, and MinIO will be used as S3 storage. The entire setup will be orchestrated using
+Nomad along with Consul and Vault.
+> The project is designed to be modular, allowing for easy updates and additions as development progresses.
+> For local development, a Docker Compose setup will be provided to simplify the initial stages without involving Nomad,
+traefik, or the Geth node. The focus will be on the essential components needed for development.
