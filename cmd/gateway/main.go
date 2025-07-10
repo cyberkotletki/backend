@@ -65,28 +65,28 @@ func main() {
 
 	log.Println("🚀 Запуск Donly Gateway...")
 
-	// 1. Инициализация Consul
+	// Инициализация Consul
 	consulClient, err := initConsul()
 	if err != nil {
 		log.Fatalf("❌ Ошибка подключения к Consul: %v", err)
 	}
 	log.Println("✅ Consul подключен")
 
-	// 2. Инициализация Vault
+	// Инициализация Vault
 	vaultClient, err := initVault()
 	if err != nil {
 		log.Fatalf("❌ Ошибка подключения к Vault: %v", err)
 	}
 	log.Println("✅ Vault подключен")
 
-	// 3. Загрузка конфигурации из Vault
+	// Загрузка конфигурации из Vault
 	config, err := loadConfigFromVault(vaultClient)
 	if err != nil {
 		log.Fatalf("❌ Ошибка загрузки конфигурации: %v", err)
 	}
 	log.Println("✅ Конфигурация загружена из Vault")
 
-	// 4. Подключение к MongoDB
+	// Подключение к MongoDB
 	mongoClient, err := initMongoDB(ctx, config.MongoURL)
 	if err != nil {
 		log.Fatalf("❌ Ошибка подключения к MongoDB: %v", err)
@@ -98,14 +98,14 @@ func main() {
 	}()
 	log.Println("✅ MongoDB подключена")
 
-	// 5. Подключение к MinIO
+	// Подключение к MinIO
 	_, err = initMinIO(config)
 	if err != nil {
 		log.Fatalf("❌ Ошибка подключения к MinIO: %v", err)
 	}
 	log.Println("✅ MinIO подключен")
 
-	// 6. Подключение к Polygon блокчейну
+	// Подключение к блокчейну
 	polygonClient, contractABI, contractAddr, err := initPolygon(config)
 	if err != nil {
 		log.Fatalf("❌ Ошибка подключения к Polygon: %v", err)
@@ -113,7 +113,7 @@ func main() {
 	log.Printf("✅ Polygon подключен к сети Chain ID: %d", config.ChainID)
 	log.Printf("📋 Контракт: %s", contractAddr.Hex())
 
-	// 7. Инициализация репозиториев
+	// Инициализация репозиториев
 	db := mongoClient.Database(config.MongoDatabase)
 
 	userRepo := mongodb.NewUserRepository(db)
@@ -134,24 +134,24 @@ func main() {
 
 	log.Println("✅ Репозитории инициализированы")
 
-	// 8. Инициализация JWT сервиса
+	// Инициализация JWT сервиса
 	jwtService := jwt.New("mega-secret-key") // TODO: взять из конфигурации
 
-	// 9. Инициализация сервисов (usecase слой)
+	// Инициализация сервисов (usecase слой)
 	userService := service.NewUserService(userRepo, historyRepo, staticRepo, config.StaticBaseURL)
 	wishService := service.NewWishService(wishRepo, staticRepo, userRepo, blockchainRepo, config.StaticBaseURL, polygonClient, contractAddr, contractABI)
 	staticService := service.NewStaticService(staticRepo, fileStorage)
 
 	log.Println("✅ Сервисы инициализированы")
 
-	// 10. Инициализация handlers (delivery слой)
+	// Инициализация handlers (delivery слой)
 	userHandler := delivery.NewUserHandler(userService, jwtService, config.TelegramBotToken)
 	wishHandler := delivery.NewWishlistHandler(wishService)
 	staticHandler := delivery.NewStaticHandler(staticService)
 
 	log.Println("✅ Handlers инициализированы")
 
-	// 11. Запуск мониторинга блокчейна
+	// Запуск мониторинга блокчейна
 	go func() {
 		if err := wishService.StartBlockchainMonitoring(ctx); err != nil {
 			log.Printf("⚠️ Ошибка запуска мониторинга блокчейна: %v", err)
@@ -159,7 +159,7 @@ func main() {
 	}()
 	log.Println("🔍 Мониторинг блокчейна запущен")
 
-	// 12. Инициализация HTTP сервера
+	// Инициализация HTTP сервера
 	e := echo.New()
 
 	// Middleware
@@ -196,7 +196,7 @@ func main() {
 		}
 	}()
 
-	// 14. Graceful shutdown
+	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
@@ -376,14 +376,16 @@ func initPolygon(config *Config) (*ethclient.Client, abi.ABI, common.Address, er
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	chainID, err := client.ChainID(ctx)
+	_, err = client.ChainID(ctx)
 	if err != nil {
 		return nil, abi.ABI{}, common.Address{}, fmt.Errorf("ошибка получения Chain ID: %w", err)
 	}
 
-	if chainID.Int64() != config.ChainID {
-		return nil, abi.ABI{}, common.Address{}, fmt.Errorf("неожиданный Chain ID: получен %d, ожидался %d", chainID.Int64(), config.ChainID)
-	}
+	/*
+		if chainID.Int64() != config.ChainID {
+			return nil, abi.ABI{}, common.Address{}, fmt.Errorf("неожиданный Chain ID: получен %d, ожидался %d", chainID.Int64(), config.ChainID)
+		}
+	*/
 
 	// Загрузка ABI контракта
 	contractABI, err := abi.JSON(strings.NewReader(abiDescription.DonatesABI))

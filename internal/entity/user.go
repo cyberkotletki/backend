@@ -43,11 +43,12 @@ type UpdateUserRequest struct {
 }
 
 type UserProfileResponse struct {
-	Banner                string  `json:"banner"`
-	Name                  string  `json:"name"`
-	BackgroundColor       *string `json:"background_color,omitempty"`
-	BackgroundImage       *string `json:"background_image,omitempty"`
-	ButtonBackgroundColor string  `json:"button_background_color"`
-	ButtonTextColor       string  `json:"button_text_color"`
-	Avatar                string  `json:"avatar"`
+	Banner                string   `json:"banner"`
+	Name                  string   `json:"name"`
+	BackgroundColor       *string  `json:"background_color,omitempty"`
+	BackgroundImage       *string  `json:"background_image,omitempty"`
+	ButtonBackgroundColor string   `json:"button_background_color"`
+	ButtonTextColor       string   `json:"button_text_color"`
+	Avatar                string   `json:"avatar"`
+	Topics                []string `json:"topics"`
 }

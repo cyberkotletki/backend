@@ -125,6 +125,7 @@ func (s *UserService) GetProfile(ctx context.Context, uuid string) (*entity.User
 		ButtonBackgroundColor: user.ButtonBackgroundColor,
 		ButtonTextColor:       user.ButtonTextColor,
 		Avatar:                s.buildImageURL(user.Avatar),
+		Topics:                user.Topics,
 	}
 
 	// Обрабатываем BackgroundImage если есть
@@ -181,6 +182,10 @@ func (s *UserService) GetHistory(ctx context.Context, uuid string, page int, pag
 	}
 
 	return response, nil
+}
+
+func (s *UserService) GetByTelegramID(ctx context.Context, telegramID string) (*entity.User, error) {
+	return s.userRepo.GetByTelegramID(ctx, telegramID)
 }
 
 // Вспомогательные методы

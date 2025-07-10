@@ -243,6 +243,42 @@
                 }
               ],
               "body": ""
+            },
+            {
+              "name": "Update profile Mock",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"banner\": 1,\n    \"name\": \"Помпончик\",\n    \"background_color\": \"#RRGGBB\",\n    \"background_image\": 1,\n    \"button_background_color\": \"#RRGGBB\",\n    \"button_text_color\": \"#RRGGBB\",\n    \"avatar\": 2 \n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{backend_url}}/mock/user",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "mock",
+                    "user"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "",
+              "header": [],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": ""
             }
           ]
         },
@@ -305,7 +341,47 @@
                   "expires": "Invalid Date"
                 }
               ],
-              "body": "{\n    \"banner\": \"https://donly.one/api/static/1\",\n    \"name\": \"Помпончик\",\n    \"background_color\": \"#FFFFFF\", // может быть null, если есть background_image\n    \"background_image\": \"https://donly.one/api/static/2\", // может быть null, если есть background_color\n    \"button_background_color\": \"#FFFFFF\",\n    \"button_text_color\": \"#0F0F0F\",\n    \"avatar\": \"https://donly.one/api/static/3\"\n}"
+              "body": "{\n    \"banner\": \"https://donly.one/api/static/1\",\n    \"name\": \"Помпончик\",\n    \"background_color\": \"#FFFFFF\", // может быть null, если есть background_image\n    \"background_image\": \"https://donly.one/api/static/2\", // может быть null, если есть background_color\n    \"button_background_color\": \"#FFFFFF\",\n    \"button_text_color\": \"#0F0F0F\",\n    \"avatar\": \"https://donly.one/api/static/3\",\n    \"balance\": 10.01,\n    \"topics\": [\"ASMR\", \"Other\"]\n}"
+            },
+            {
+              "name": "Get Profile Info Mock",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{backend_url}}/mock/user?streamer_uuid={{$randomUUID}}",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "mock",
+                    "user"
+                  ],
+                  "query": [
+                    {
+                      "key": "streamer_uuid",
+                      "value": "{{$randomUUID}}"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"banner\": \"https://donly.one/api/static/1\",\n    \"name\": \"Помпончик\",\n    \"background_color\": \"#FFFFFF\", \n    \"background_image\": \"https://donly.one/api/static/2\",\n    \"button_background_color\": \"#FFFFFF\",\n    \"button_text_color\": \"#0F0F0F\",\n    \"avatar\": \"https://donly.one/api/static/3\",\n    \"balance\": 10.01,\n    \"topics\": [\"ASMR\", \"Other\"]\n}"
             }
           ]
         },
@@ -366,6 +442,48 @@
                 }
               ],
               "body": "{\n    \"page\": 1,\n    \"history\": [\n        {\n            \"type\": \"donate\",\n            \"username\": \"Букашка\", // может быть null, если пожелал остаться анонимом\n            \"datetime\": \"2018-08-18T00:00:00+1000\", // формат ISO 8601 с учетом tz\n            \"amount\": 10.1, // сколько полигоново задонатил\n            \"wish_uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\", // на какое желание\n            \"message\": \"привет\" // может быть пустым или null\n        },\n        {\n            \"type\": \"withdraw\",\n            \"datetime\": \"2018-08-18T00:00:00+1000\", // формат ISO 8601 с учетом tz\n            \"amount\": 10.1 // количество выведенных полигонов без учёта комиссии сети\n        }\n    ]\n}"
+            },
+            {
+              "name": "History Mock",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{backend_url}}/mock/user/history?page=1",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "mock",
+                    "user",
+                    "history"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "Страница истории. На каждой странице не более 20 элементов в обратном хронологическом порядке (от последнего к самому старому)"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"page\": 1,\n    \"history\": [\n        {\n            \"type\": \"donate\",\n            \"username\": \"Букашка\", \n            \"datetime\": \"2018-08-18T00:00:00+1000\",\n            \"amount\": 10.1, \n            \"wish_uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\", \n            \"message\": \"привет\"\n        },\n        {\n            \"type\": \"withdraw\",\n            \"datetime\": \"2018-08-18T00:00:00+1000\", \n            \"amount\": 10.1 \n        }\n    ]\n}"
             }
           ]
         },
@@ -407,13 +525,34 @@
                 {
                   "key": "Content-Type",
                   "value": "application/json",
-                  "name": "Content-Type",
                   "description": "",
                   "type": "text"
                 }
               ],
               "cookie": [],
               "body": "{\n    \"streamer_uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\"\n}"
+            },
+            {
+              "name": "Me Mock",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{backend_url}}/mock/user/me",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "mock",
+                    "user",
+                    "me"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": null,
+              "header": null,
+              "cookie": [],
+              "body": "{\r\n    \"streamer_uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\"\r\n}"
             }
           ]
         }
@@ -722,6 +861,42 @@
                 }
               ],
               "body": ""
+            },
+            {
+              "name": "Edit Wish Mock",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"wish_uuid\": \"c35281bd-4740-48e4-b4b3-af05bad16383\",\n    \"image\": 1,\n    \"is_priority\": false\n}\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{backend_url}}/mock/wishlist",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "mock",
+                    "wishlist"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "",
+              "header": [],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": ""
             }
           ]
         },
@@ -783,6 +958,44 @@
                 }
               ],
               "body": "{\n    \"wishes\": [\n        {\n            \"uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\",\n            \"wish_url\": \"https://ozon.com/bla-bla\", // в теории может быть null или пустой строкой\n            \"name\": \"wish name\",\n            \"description\": \"wish description\", // в теории может быть null или пустой строкой\n            \"image\": \"https://donly.one/api/static/1\", // id of uploaded image\n            \"pol_target\": 1.1, // сколько полигончиков нужно собрать\n            \"pol_amount\": 0.1, // текущие сборы\n            \"is_priority\": false\n        },\n        {\n            \"uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\",\n            \"wish_url\": \"https://ozon.com/bla-bla\", // в теории может быть null или пустой строкой\n            \"name\": \"wish name\",\n            \"description\": \"wish description\", // в теории может быть null или пустой строкой\n            \"image\": \"https://donly.one/api/static/1\", // id of uploaded image\n            \"pol_target\": 1.1, // сколько полигончиков нужно собрать\n            \"pol_amount\": 0.1, // текущие сборы\n            \"is_priority\": false\n        }\n    ]\n}"
+            },
+            {
+              "name": "Get Streamer Wishlist Mock",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{backend_url}}/mock/wishlist?streamer_uuid={{$randomUUID}}",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "mock",
+                    "wishlist"
+                  ],
+                  "query": [
+                    {
+                      "key": "streamer_uuid",
+                      "value": "{{$randomUUID}}"
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"wishes\": [\n        {\n            \"uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\",\n            \"wish_url\": \"https://ozon.com/bla-bla\",\n            \"name\": \"wish name\",\n            \"description\": \"wish description\",\n            \"image\": \"https://donly.one/api/static/1\",\n            \"pol_target\": 1.1,\n            \"pol_amount\": 0.1,\n            \"is_priority\": false\n        },\n        {\n            \"uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b999\",\n            \"wish_url\": \"https://ozon.com/gaming-headset\",\n            \"name\": \"Gaming Headset Pro\",\n            \"description\": \"High-quality gaming headset with surround sound\",\n            \"image\": \"https://donly.one/api/static/2\",\n            \"pol_target\": 1.5,\n            \"pol_amount\": 0.9,\n            \"is_priority\": true\n        }\n    ]\n}"
             }
           ]
         }

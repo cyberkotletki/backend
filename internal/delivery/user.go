@@ -24,6 +24,8 @@ func NewUserHandler(userUC usecase.UserUsecase, jwtService *jwt.JWT, botToken st
 func (h *UserHandler) Configure(e *echo.Echo, jwtMiddleware echo.MiddlewareFunc) {
 	g := e.Group("/user")
 	g.POST("/streamer/register", h.Register)
+	g.POST("/streamer/login", h.Login)
+	g.GET("/me", h.Me, jwtMiddleware)
 	g.PUT("", h.UpdateProfile, jwtMiddleware)
 	g.GET("", h.GetProfile)
 	g.GET("/history", h.GetHistory, jwtMiddleware)
@@ -88,4 +90,35 @@ func (h *UserHandler) GetHistory(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, history)
+}
+
+func (h *UserHandler) Login(c echo.Context) error {
+	authHeader := c.Request().Header.Get("Authorization")
+	user, err := telegramauth.VerifyUser(authHeader, h.BotToken)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "invalid telegram auth: "+err.Error())
+	}
+	telegramID := strconv.FormatInt(user.ID, 10)
+	dbUser, err := h.UserUC.GetByTelegramID(c.Request().Context(), telegramID)
+	if err != nil || dbUser == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "user not found")
+	}
+	token, err := h.JWTService.GenerateToken(dbUser.UUID, 30*24*60*60) // 30 дней
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to generate token")
+	}
+	cookie := new(http.Cookie)
+	cookie.Name = "jwt"
+	cookie.Value = token
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.SameSite = http.SameSiteLaxMode
+	cookie.MaxAge = 30 * 24 * 60 * 60
+	c.SetCookie(cookie)
+	return c.NoContent(http.StatusNoContent)
+}
+
+func (h *UserHandler) Me(c echo.Context) error {
+	uuid := c.Get("user_uuid").(string)
+	return c.JSON(http.StatusOK, map[string]string{"streamer_uuid": uuid})
 }

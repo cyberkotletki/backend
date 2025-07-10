@@ -231,7 +231,7 @@ func (s *WishService) GetWishes(ctx context.Context, streamerUUID string) ([]ent
 	// Получаем все желания стримера
 	wishes, err := s.wishRepo.GetByStreamerUUID(ctx, streamerUUID)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка получения жел��ний: %w", err)
+		return nil, fmt.Errorf("ошибка получения желаний: %w", err)
 	}
 
 	// Конвертируем в response формат
@@ -359,33 +359,47 @@ func (s *WishService) processNewBlocks(ctx context.Context) error {
 		return nil // Нет новых блоков
 	}
 
+	// Если lastBlock == 0 или 1, считаем, что только что задеплоили контракт и все старые блоки не нужны
+	if s.lastBlock == 0 || s.lastBlock == 1 {
+		if err := s.saveLastProcessedBlock(ctx, currentBlock); err != nil {
+			log.Printf("Ошибка сохранения последнего обработанного блока: %v", err)
+		}
+		s.lastBlock = currentBlock
+		log.Printf("Пропускаем обработку старых блоков, выставляем lastBlock = %d", currentBlock)
+		return nil
+	}
+
 	log.Printf("Обрабатываем блоки с %d по %d", s.lastBlock+1, currentBlock)
 
-	// Создаем фильтр для событий
-	query := ethereum.FilterQuery{
-		FromBlock: big.NewInt(int64(s.lastBlock + 1)),
-		ToBlock:   big.NewInt(int64(currentBlock)),
-		Addresses: []common.Address{s.contractAddr},
-	}
+	const maxBlockRange = 50000
+	fromBlock := s.lastBlock + 1
+	toBlock := currentBlock
 
-	logs, err := s.client.FilterLogs(ctx, query)
-	if err != nil {
-		return fmt.Errorf("ошибка получения логов: %w", err)
-	}
-
-	// Обрабатываем каждый лог
-	for _, vLog := range logs {
-		if err := s.processBlockchainLog(ctx, vLog); err != nil {
-			log.Printf("Ошибка обработки лога: %v", err)
+	for from := fromBlock; from <= toBlock; from += maxBlockRange {
+		end := from + maxBlockRange - 1
+		if end > toBlock {
+			end = toBlock
 		}
+		query := ethereum.FilterQuery{
+			FromBlock: big.NewInt(int64(from)),
+			ToBlock:   big.NewInt(int64(end)),
+			Addresses: []common.Address{s.contractAddr},
+		}
+		logs, err := s.client.FilterLogs(ctx, query)
+		if err != nil {
+			return fmt.Errorf("ошибка получения логов: %w", err)
+		}
+		for _, vLog := range logs {
+			if err := s.processBlockchainLog(ctx, vLog); err != nil {
+				log.Printf("Ошибка обработки лога: %v", err)
+			}
+		}
+		// После каждого чанка сохраняем последний обработанный блок
+		if err := s.saveLastProcessedBlock(ctx, end); err != nil {
+			log.Printf("Ошибка сохранения последнего обработанного блока: %v", err)
+		}
+		s.lastBlock = end
 	}
-
-	// Сохраняем последний обработанный блок
-	if err := s.saveLastProcessedBlock(ctx, currentBlock); err != nil {
-		log.Printf("Ошибка сохранения последнего обработанного блока: %v", err)
-	}
-
-	s.lastBlock = currentBlock
 	return nil
 }
 
