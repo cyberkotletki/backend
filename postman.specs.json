@@ -1,0 +1,792 @@
+{
+  "info": {
+    "_postman_id": "bfbf9444-e711-446f-bbb5-618968e94a70",
+    "name": "Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26736433",
+    "_collection_link": "https://speeding-meadow-847911.postman.co/workspace/Donly.one~79472afc-26b3-423e-94ae-74d36874b031/collection/26736433-bfbf9444-e711-446f-bbb5-618968e94a70?action=share&source=collection_link&creator=26736433"
+  },
+  "item": [
+    {
+      "name": "user",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "tgm <init_data>",
+                "description": "ПЕРЕДАВАТЬ ЗАГОЛОВОК ДЛЯ РЕГИСТРАЦИИ ЧЕРЕЗ TELEGRAM MINI APP, подробнее: https://docs.telegram-mini-apps.com/platform/authorizing-user",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"polygon_wallet\": \"0x00000000000000000000\",\n    \"topics\": [\"ASMR\", \"Other\"], // точный набор тем стоит обсудить и зафиксировать\n    \"name\": \"Бульбазаврик\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{backend_url}}/user/streamer/register",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "user",
+                "streamer",
+                "register"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Register",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "tgm <init_data>",
+                    "description": "ПЕРЕДАВАТЬ ЗАГОЛОВОК ДЛЯ РЕГИСТРАЦИИ ЧЕРЕЗ TELEGRAM MINI APP, подробнее: https://docs.telegram-mini-apps.com/platform/authorizing-user",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"polygon_wallet\": \"0x00000000000000000000\",\n    \"topics\": [\"ASMR\", \"Other\"], // точный набор тем стоит обсудить и зафиксировать\n    \"name\": \"Бульбазаврик\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{backend_url}}/user/streamer/register",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "user",
+                    "streamer",
+                    "register"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"streamer_uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "tgm <init_data>",
+                "description": "ПЕРЕДАВАТЬ ЗАГОЛОВОК ДЛЯ АВТОРИЗАЦИИ ЧЕРЕЗ TELEGRAM MINI APP, подробнее: https://docs.telegram-mini-apps.com/platform/authorizing-user",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{backend_url}}/user/streamer/login",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "user",
+                "streamer",
+                "login"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Login",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "tgm <init_data>",
+                    "description": "ПЕРЕДАВАТЬ ЗАГОЛОВОК ДЛЯ РЕГИСТРАЦИИ ЧЕРЕЗ TELEGRAM MINI APP, подробнее: https://docs.telegram-mini-apps.com/platform/authorizing-user",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"polygon_wallet\": \"0x00000000000000000000\",\n    \"topics\": [\"ASMR\", \"Other\"], // точный набор тем стоит обсудить и зафиксировать\n    \"name\": \"Бульбазаврик\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{backend_url}}/user/streamer/register",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "user",
+                    "streamer",
+                    "register"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Update profile",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"banner\": 1, // айди загруженного файла\n    \"name\": \"Помпончик\",\n    \"background_color\": \"#RRGGBB\", // необязателен, если есть background_image\n    \"background_image\": 1, // айди загруженного файла; необязателен, если есть background_color\n    \"button_background_color\": \"#RRGGBB\",\n    \"button_text_color\": \"#RRGGBB\",\n    \"avatar\": 2 // айди загруженного файла\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{backend_url}}/user",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "user"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Update profile",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"banner\": 1, // айди загруженного файла\n    \"name\": \"Помпончик\",\n    \"background_color\": \"#RRGGBB\", // необязателен, если есть background_image\n    \"background_image\": 1, // айди загруженного файла; необязателен, если есть background_color\n    \"button_background_color\": \"#RRGGBB\",\n    \"button_text_color\": \"#RRGGBB\",\n    \"avatar\": 2 // айди загруженного файла\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{backend_url}}/user",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "user"
+                  ]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "",
+              "header": [],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get Profile Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/user?streamer_uuid={{$randomUUID}}",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "user"
+              ],
+              "query": [
+                {
+                  "key": "streamer_uuid",
+                  "value": "{{$randomUUID}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Get Profile Info",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{backend_url}}/user?streamer_uuid={{$randomUUID}}",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "user"
+                  ],
+                  "query": [
+                    {
+                      "key": "streamer_uuid",
+                      "value": "{{$randomUUID}}"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"banner\": \"https://donly.one/api/static/1\",\n    \"name\": \"Помпончик\",\n    \"background_color\": \"#FFFFFF\", // может быть null, если есть background_image\n    \"background_image\": \"https://donly.one/api/static/2\", // может быть null, если есть background_color\n    \"button_background_color\": \"#FFFFFF\",\n    \"button_text_color\": \"#0F0F0F\",\n    \"avatar\": \"https://donly.one/api/static/3\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/user/history",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "user",
+                "history"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "History",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{backend_url}}/user/history?page=1",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "user",
+                    "history"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "Страница истории. На каждой странице не более 20 элементов в обратном хронологическом порядке (от последнего к самому старому)"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"page\": 1,\n    \"history\": [\n        {\n            \"type\": \"donate\",\n            \"username\": \"Букашка\", // может быть null, если пожелал остаться анонимом\n            \"datetime\": \"2018-08-18T00:00:00+1000\", // формат ISO 8601 с учетом tz\n            \"amount\": 10.1, // сколько полигоново задонатил\n            \"wish_uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\", // на какое желание\n            \"message\": \"привет\" // может быть пустым или null\n        },\n        {\n            \"type\": \"withdraw\",\n            \"datetime\": \"2018-08-18T00:00:00+1000\", // формат ISO 8601 с учетом tz\n            \"amount\": 10.1 // количество выведенных полигонов без учёта комиссии сети\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/user/me",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Me",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{backend_url}}/user/me",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "user",
+                    "me"
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "name": "Content-Type",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"streamer_uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "static",
+      "item": [
+        {
+          "name": "Upload",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "postman-cloud:///1f05c1c6-5bed-4410-9f6c-6925caeb50d9"
+                },
+                {
+                  "key": "type",
+                  "value": "avatar",
+                  "description": "Может быть avatar, banner, background, wish",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{backend_url}}/static/upload",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "static",
+                "upload"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Upload success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "postman-cloud:///1f05c1c6-5bed-4410-9f6c-6925caeb50d9"
+                    },
+                    {
+                      "key": "type",
+                      "value": "avatar",
+                      "description": "Может быть avatar, banner, background, wish",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{backend_url}}/static/upload",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "static",
+                    "upload"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"file_uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\"\n}"
+            },
+            {
+              "name": "Upload bad request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "postman-cloud:///1f05c1c6-5bed-4410-9f6c-6925caeb50d9"
+                    },
+                    {
+                      "key": "type",
+                      "value": "avatar",
+                      "description": "Может быть avatar, banner, background, wish",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{backend_url}}/static/upload",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "static",
+                    "upload"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"error\": \"изображение типа avatar должно быть минимум 128 на 128 пикселей\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Static",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "tgm <init_data>",
+                "description": "ПЕРЕДАВАТЬ ЗАГОЛОВОК ДЛЯ РЕГИСТРАЦИИ ЧЕРЕЗ TELEGRAM MINI APP, подробнее: https://docs.telegram-mini-apps.com/platform/authorizing-user",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{backend_url}}/static/{{$randomUUID}}",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "static",
+                "{{$randomUUID}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "wishlist",
+      "item": [
+        {
+          "name": "Add Wish",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"wish_url\": \"https://ozon.com/bla-bla\", //optional\n    \"name\": \"wish name\",\n    \"description\": \"wish description\", //optional\n    \"image\": 1, // id of uploaded image\n    \"pol_target\": 0.00000001, // сколько полигончиков нужно собрать\n    \"is_priority\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{backend_url}}/wishlist",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "wishlist"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Add Wish",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"wish_url\": \"https://ozon.com/bla-bla\", //optional\n    \"name\": \"wish name\",\n    \"description\": \"wish description\", //optional\n    \"image\": 1, // id of uploaded image\n    \"pol_target\": 0.00000001, // сколько полигончиков нужно собрать\n    \"is_priority\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{backend_url}}/wishlist",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "wishlist"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"wish_uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Edit Wish",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"wish_uuid\": 12,\n    \"image\": 1, // айди загруженного изображения\n    \"is_priority\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{backend_url}}/wishlist",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "wishlist"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Edit Wish",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"wish_uuid\": \"c35281bd-4740-48e4-b4b3-af05bad16383\",\n    \"image\": 1, // айди загруженного изображения\n    \"is_priority\": false\n}\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{backend_url}}/wishlist",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "wishlist"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "",
+              "header": [],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get Streamer Wishlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{backend_url}}/wishlist?streamer_uuid={{$randomUUID}}",
+              "host": [
+                "{{backend_url}}"
+              ],
+              "path": [
+                "wishlist"
+              ],
+              "query": [
+                {
+                  "key": "streamer_uuid",
+                  "value": "{{$randomUUID}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Get Streamer Wishlist",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{backend_url}}/wishlist?streamer_uuid={{$randomUUID}}",
+                  "host": [
+                    "{{backend_url}}"
+                  ],
+                  "path": [
+                    "wishlist"
+                  ],
+                  "query": [
+                    {
+                      "key": "streamer_uuid",
+                      "value": "{{$randomUUID}}"
+                    }
+                  ]
+                }
+              },
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "description": "",
+                  "type": "text"
+                }
+              ],
+              "cookie": [
+                {
+                  "expires": "Invalid Date"
+                }
+              ],
+              "body": "{\n    \"wishes\": [\n        {\n            \"uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\",\n            \"wish_url\": \"https://ozon.com/bla-bla\", // в теории может быть null или пустой строкой\n            \"name\": \"wish name\",\n            \"description\": \"wish description\", // в теории может быть null или пустой строкой\n            \"image\": \"https://donly.one/api/static/1\", // id of uploaded image\n            \"pol_target\": 1.1, // сколько полигончиков нужно собрать\n            \"pol_amount\": 0.1, // текущие сборы\n            \"is_priority\": false\n        },\n        {\n            \"uuid\": \"0197ec91-c0ee-729e-a85f-0d421763b998\",\n            \"wish_url\": \"https://ozon.com/bla-bla\", // в теории может быть null или пустой строкой\n            \"name\": \"wish name\",\n            \"description\": \"wish description\", // в теории может быть null или пустой строкой\n            \"image\": \"https://donly.one/api/static/1\", // id of uploaded image\n            \"pol_target\": 1.1, // сколько полигончиков нужно собрать\n            \"pol_amount\": 0.1, // текущие сборы\n            \"is_priority\": false\n        }\n    ]\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

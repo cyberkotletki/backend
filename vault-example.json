@@ -1,0 +1,17 @@
+{
+  "server_port": "8080",
+  "mongo_url": "mongodb://admin:password@localhost:27017",
+  "mongo_database": "donly",
+  "minio_endpoint": "localhost:9000",
+  "minio_access_key": "minioadmin",
+  "minio_secret_key": "minioadmin",
+  "minio_bucket": "donly-static",
+  "minio_use_ssl": false,
+  "polygon_rpc_url": "https://rpc-amoy.polygon.technology",
+  "chain_id": 80002,
+  "contract_address": "0x0000000000000000000000000000000000000000",
+  "private_key": "your_private_key_here",
+  "static_base_url": "http://localhost:8080",
+  "telegram_bot_token": "your_telegram_bot_token_here"
+}
+

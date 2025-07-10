@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donly Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .user-info {
+            background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .button:hover {
+            opacity: 0.8;
+        }
+        .error {
+            color: #ff3333;
+            padding: 10px;
+            background: #ffeeee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .success {
+            color: #00aa00;
+            padding: 10px;
+            background: #eeffee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Donly Mini App</h1>
+
+    <div id="loading" class="loading">
+        Загрузка...
+    </div>
+
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="success" class="success" style="display: none;"></div>
+
+    <div id="user-info" class="user-info" style="display: none;">
+        <h3>Информация о пользователе</h3>
+        <p><strong>ID:</strong> <span id="user-id"></span></p>
+        <p><strong>Имя:</strong> <span id="user-name"></span></p>
+        <p><strong>Username:</strong> <span id="user-username"></span></p>
+        <p><strong>Статус:</strong> <span id="auth-status"></span></p>
+    </div>
+
+    <button id="auth-btn" class="button" style="display: none;">
+        Авторизоваться
+    </button>
+
+    <button id="test-api-btn" class="button" style="display: none;">
+        Тестировать API
+    </button>
+
+    <div id="api-result" style="display: none; margin-top: 20px;">
+        <h3>Результат API запроса:</h3>
+        <pre id="api-response"></pre>
+    </div>
+</div>
+
+<script src="index.js"></script>
+</body>
+</html>
