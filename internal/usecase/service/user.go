@@ -3,7 +3,9 @@ package service
 import (
 	"backend/internal/entity"
 	"backend/internal/repo"
+	"backend/internal/usecase"
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"time"
@@ -33,21 +35,9 @@ func NewUserService(
 }
 
 func (s *UserService) Register(ctx context.Context, req entity.RegisterUserRequest) (string, error) {
-	// Валидация входных данных
 	if err := s.validateRegisterRequest(req); err != nil {
-		return "", err
+		return "", errors.Join(usecase.ErrInvalidRegisterRequest, err)
 	}
-
-	// Проверяем, не зарегистрирован ли уже пользователь с таким Telegram ID
-	existingUser, err := s.userRepo.GetByTelegramID(ctx, req.TelegramID)
-	if err != nil {
-		return "", fmt.Errorf("ошибка проверки существующего пользователя: %w", err)
-	}
-	if existingUser != nil {
-		return "", fmt.Errorf("пользователь с таким Telegram ID уже зарегистрирован")
-	}
-
-	// Создаем нового пользователя
 	user := &entity.User{
 		UUID:                  uuid.New().String(),
 		PolygonWallet:         req.PolygonWallet,
@@ -55,41 +45,38 @@ func (s *UserService) Register(ctx context.Context, req entity.RegisterUserReque
 		Topics:                req.Topics,
 		Banner:                "",
 		Avatar:                "",
-		BackgroundColor:       stringPtr("#090909"), // значение по умолчанию
+		BackgroundColor:       stringPtr("#090909"),
 		BackgroundImage:       nil,
-		ButtonBackgroundColor: "#7272FD", // значение по умолчанию
-		ButtonTextColor:       "#FFFFFF", // значение по умолчанию
+		ButtonBackgroundColor: "#7272FD",
+		ButtonTextColor:       "#FFFFFF",
 		CreatedAt:             time.Now(),
 		UpdatedAt:             time.Now(),
 		TelegramID:            req.TelegramID,
 	}
-
 	userUUID, err := s.userRepo.Register(ctx, user)
 	if err != nil {
-		return "", fmt.Errorf("ошибка регистрации пользователя: %w", err)
+		if errors.Is(err, repo.ErrUserAlreadyExists) {
+			return "", usecase.ErrUserAlreadyExists
+		}
+		return "", err
 	}
-
 	return userUUID, nil
 }
 
 func (s *UserService) UpdateProfile(ctx context.Context, req entity.UpdateUserRequest) error {
-	// Валидация входных данных
 	if err := s.validateUpdateRequest(req); err != nil {
-		return err
+		return errors.Join(usecase.ErrInvalidUpdateRequest, err)
 	}
-
-	// Получаем существующего пользователя
 	user, err := s.userRepo.GetByUUID(ctx, req.UUID)
 	if err != nil {
-		return fmt.Errorf("пользователь не найден: %w", err)
-	}
-
-	// Проверяем валидность файлов и принадлежность пользователю
-	if err := s.validateUserFiles(ctx, req, user.UUID); err != nil {
+		if errors.Is(err, repo.ErrUserNotFound) {
+			return usecase.ErrUserNotFound
+		}
 		return err
 	}
-
-	// Обновляем поля пользователя
+	if err := s.validateUserFiles(ctx, req, user.UUID); err != nil {
+		return errors.Join(usecase.ErrInvalidUpdateRequest, err)
+	}
 	user.Banner = req.Banner
 	user.Name = req.Name
 	user.BackgroundColor = req.BackgroundColor
@@ -98,26 +85,27 @@ func (s *UserService) UpdateProfile(ctx context.Context, req entity.UpdateUserRe
 	user.ButtonTextColor = req.ButtonTextColor
 	user.Avatar = req.Avatar
 	user.UpdatedAt = time.Now()
-
-	// Сохраняем изменения
 	err = s.userRepo.Update(ctx, user)
 	if err != nil {
-		return fmt.Errorf("ошибка обновления профиля: %w", err)
+		if errors.Is(err, repo.ErrUserNotFound) {
+			return usecase.ErrUserNotFound
+		}
+		return err
 	}
-
 	return nil
 }
 
 func (s *UserService) GetProfile(ctx context.Context, uuid string) (*entity.UserProfileResponse, error) {
 	if uuid == "" {
-		return nil, fmt.Errorf("UUID пользователя не может быть пустым")
+		return nil, usecase.ErrUserNotFound
 	}
-
 	user, err := s.userRepo.GetByUUID(ctx, uuid)
 	if err != nil {
-		return nil, fmt.Errorf("пользователь не найден: %w", err)
+		if errors.Is(err, repo.ErrUserNotFound) {
+			return nil, usecase.ErrUserNotFound
+		}
+		return nil, err
 	}
-
 	response := &entity.UserProfileResponse{
 		Banner:                s.buildImageURL(user.Banner),
 		Name:                  user.Name,
@@ -126,43 +114,36 @@ func (s *UserService) GetProfile(ctx context.Context, uuid string) (*entity.User
 		ButtonTextColor:       user.ButtonTextColor,
 		Avatar:                s.buildImageURL(user.Avatar),
 		Topics:                user.Topics,
+		PolygonWallet:         user.PolygonWallet,
 	}
-
-	// Обрабатываем BackgroundImage если есть
 	if user.BackgroundImage != nil && *user.BackgroundImage != "" {
 		backgroundImageURL := s.buildImageURL(*user.BackgroundImage)
 		response.BackgroundImage = &backgroundImageURL
 	}
-
 	return response, nil
 }
 
 func (s *UserService) GetHistory(ctx context.Context, uuid string, page int, pageSize int) (*entity.UserHistoryResponse, error) {
 	if uuid == "" {
-		return nil, fmt.Errorf("UUID пользователя не может быть пустым")
+		return nil, usecase.ErrUserNotFound
 	}
-
 	if page < 1 {
 		page = 1
 	}
-
 	if pageSize < 1 || pageSize > 100 {
-		pageSize = 20 // значение по умолчанию
+		pageSize = 20
 	}
-
-	// Проверяем, что пользователь существует
 	_, err := s.userRepo.GetByUUID(ctx, uuid)
 	if err != nil {
-		return nil, fmt.Errorf("пользователь не найден: %w", err)
+		if errors.Is(err, repo.ErrUserNotFound) {
+			return nil, usecase.ErrUserNotFound
+		}
+		return nil, err
 	}
-
-	// Получаем историю из репозитория
 	historyItems, err := s.historyRepo.GetByStreamerUUID(ctx, uuid, page, pageSize)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка получения истории: %w", err)
+		return nil, err
 	}
-
-	// Конвертируем в response формат
 	history := make([]entity.HistoryItem, 0, len(historyItems))
 	for _, item := range historyItems {
 		historyItem := entity.HistoryItem{
@@ -175,17 +156,22 @@ func (s *UserService) GetHistory(ctx context.Context, uuid string, page int, pag
 		}
 		history = append(history, historyItem)
 	}
-
 	response := &entity.UserHistoryResponse{
 		Page:    page,
 		History: history,
 	}
-
 	return response, nil
 }
 
 func (s *UserService) GetByTelegramID(ctx context.Context, telegramID string) (*entity.User, error) {
-	return s.userRepo.GetByTelegramID(ctx, telegramID)
+	user, err := s.userRepo.GetByTelegramID(ctx, telegramID)
+	if err != nil {
+		if errors.Is(err, repo.ErrUserNotFound) {
+			return nil, usecase.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return user, nil
 }
 
 // Вспомогательные методы
@@ -304,8 +290,8 @@ func (s *UserService) validateUserFiles(ctx context.Context, req entity.UpdateUs
 
 func (s *UserService) validateStaticFile(ctx context.Context, fileID, expectedType, userUUID string) error {
 	staticFile, err := s.staticRepo.GetByID(ctx, fileID)
-	if err != nil {
-		return fmt.Errorf("файл не найден")
+	if errors.Is(err, repo.ErrStaticFileNotFound) {
+		return fmt.Errorf("файл с ID '%s' не найден", fileID)
 	}
 
 	if staticFile.Type != expectedType {

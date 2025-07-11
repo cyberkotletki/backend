@@ -12,6 +12,7 @@
   "contract_address": "0x0000000000000000000000000000000000000000",
   "private_key": "your_private_key_here",
   "static_base_url": "http://localhost:8080",
-  "telegram_bot_token": "your_telegram_bot_token_here"
+  "telegram_bot_token": "your_telegram_bot_token_here",
+  "redis_addr": "localhost:6379",
+  "redis_password": ""
 }
-

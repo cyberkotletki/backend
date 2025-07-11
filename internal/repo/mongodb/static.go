@@ -39,7 +39,7 @@ func (r *staticFileRepository) GetByID(ctx context.Context, id string) (*entity.
 	err := r.col.FindOne(ctx, filter).Decode(&file)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, nil
+			return nil, repo.ErrStaticFileNotFound
 		}
 		return nil, err
 	}

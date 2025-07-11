@@ -51,4 +51,5 @@ type UserProfileResponse struct {
 	ButtonTextColor       string   `json:"button_text_color"`
 	Avatar                string   `json:"avatar"`
 	Topics                []string `json:"topics"`
+	PolygonWallet         string   `json:"polygon_wallet"`
 }

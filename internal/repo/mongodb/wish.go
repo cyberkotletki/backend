@@ -40,7 +40,7 @@ func (r *wishRepository) Update(ctx context.Context, wish *entity.Wish) error {
 		return err
 	}
 	if res.MatchedCount == 0 {
-		return errors.New("wish not found")
+		return repo.ErrWishNotFound
 	}
 	return nil
 }
@@ -51,7 +51,7 @@ func (r *wishRepository) GetByUUID(ctx context.Context, uuid string) (*entity.Wi
 	err := r.col.FindOne(ctx, filter).Decode(&wish)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, nil
+			return nil, repo.ErrWishNotFound
 		}
 		return nil, err
 	}

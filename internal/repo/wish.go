@@ -3,6 +3,11 @@ package repo
 import (
 	"backend/internal/entity"
 	"context"
+	"errors"
+)
+
+var (
+	ErrWishNotFound = errors.New("wish not found")
 )
 
 type WishRepository interface {

@@ -1,6 +1,7 @@
 package s3
 
 import (
+	"backend/internal/repo"
 	"context"
 	"fmt"
 	"github.com/minio/minio-go/v7"
@@ -47,19 +48,18 @@ func NewFileStorage(cfg Config) (*FileStorage, error) {
 }
 
 func (s *FileStorage) Upload(ctx context.Context, filePath string, data io.ReadSeeker, contentType string) (string, error) {
-	// Размер файла определяем через Seek
 	cur, _ := data.Seek(0, io.SeekCurrent)
 	sz, err := data.Seek(0, io.SeekEnd)
 	if err != nil {
-		return "", err
+		return "", repo.ErrFileStorageUpload
 	}
 	_, err = data.Seek(cur, io.SeekStart)
 	if err != nil {
-		return "", err
+		return "", repo.ErrFileStorageUpload
 	}
 	_, err = s.client.PutObject(ctx, s.bucketName, filePath, data, sz, minio.PutObjectOptions{ContentType: contentType})
 	if err != nil {
-		return "", err
+		return "", repo.ErrFileStorageUpload
 	}
 	return filePath, nil
 }
@@ -67,16 +67,20 @@ func (s *FileStorage) Upload(ctx context.Context, filePath string, data io.ReadS
 func (s *FileStorage) Get(ctx context.Context, filePath string) (io.ReadSeeker, string, error) {
 	obj, err := s.client.GetObject(ctx, s.bucketName, filePath, minio.GetObjectOptions{})
 	if err != nil {
-		return nil, "", err
+		return nil, "", repo.ErrFileStorageNotFound
 	}
 	stat, err := obj.Stat()
 	if err != nil {
 		_ = obj.Close()
-		return nil, "", err
+		return nil, "", repo.ErrFileStorageNotFound
 	}
 	return obj, stat.ContentType, nil
 }
 
 func (s *FileStorage) Delete(ctx context.Context, filePath string) error {
-	return s.client.RemoveObject(ctx, s.bucketName, filePath, minio.RemoveObjectOptions{})
+	err := s.client.RemoveObject(ctx, s.bucketName, filePath, minio.RemoveObjectOptions{})
+	if err != nil {
+		return repo.ErrFileStorageDelete
+	}
+	return nil
 }

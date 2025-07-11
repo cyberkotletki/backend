@@ -3,7 +3,9 @@ package service
 import (
 	"backend/internal/entity"
 	"backend/internal/repo"
+	"backend/internal/usecase"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -128,32 +130,23 @@ func (s *WishService) StopBlockchainMonitoring() {
 }
 
 func (s *WishService) AddWish(ctx context.Context, req entity.AddWishRequest) (string, error) {
-	// Проверяем, что пользователь существует
 	user, err := s.userRepo.GetByUUID(ctx, req.UserUUID)
 	if err != nil {
-		return "", fmt.Errorf("пользователь не найден: %w", err)
+		return "", usecase.ErrUserNotFound
 	}
-
-	// Проверяем валидность данных
 	if err := s.validateAddWishRequest(req); err != nil {
-		return "", err
+		return "", usecase.ErrInvalidWish
 	}
-
-	// Проверяем, что изображение существует и принадлежит пользователю
 	staticFile, err := s.staticRepo.GetByID(ctx, req.Image)
 	if err != nil {
-		return "", fmt.Errorf("изображение не найдено: %w", err)
+		return "", usecase.ErrStaticFileNotFound
 	}
-
 	if staticFile.Type != "wish" {
-		return "", fmt.Errorf("изображение должно быть типа 'wish'")
+		return "", usecase.ErrInvalidWish
 	}
-
 	if staticFile.UploaderUUID != req.UserUUID {
-		return "", fmt.Errorf("изображение не принадлежит текущему пользователю")
+		return "", usecase.ErrInvalidWish
 	}
-
-	// Создаем новое желание в статусе pending
 	wish := &entity.Wish{
 		UUID:         uuid.New().String(),
 		StreamerUUID: user.UUID,
@@ -164,84 +157,65 @@ func (s *WishService) AddWish(ctx context.Context, req entity.AddWishRequest) (s
 		PolTarget:    req.PolTarget,
 		PolAmount:    0.0,
 		IsPriority:   req.IsPriority,
-		Status:       "pending", // начальный статус - ожидание подтверждения в блокчейне
+		Status:       "pending",
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
-
 	wishUUID, err := s.wishRepo.Add(ctx, wish)
 	if err != nil {
-		return "", fmt.Errorf("ошибка сохранения желания: %w", err)
+		return "", err
 	}
-
 	return wishUUID, nil
 }
 
 func (s *WishService) UpdateWish(ctx context.Context, req entity.UpdateWishRequest) error {
-	// Получаем существующее желание
 	wish, err := s.wishRepo.GetByUUID(ctx, req.WishUUID)
 	if err != nil {
-		return fmt.Errorf("желание не найдено: %w", err)
+		return usecase.ErrWishNotFound
 	}
-
-	// Проверяем, что желание принадлежит текущему пользователю
 	user, err := s.userRepo.GetByUUID(ctx, req.UserUUID)
 	if err != nil {
-		return fmt.Errorf("пользователь не найден: %w", err)
+		return usecase.ErrUserNotFound
 	}
-
 	if wish.StreamerUUID != user.UUID {
-		return fmt.Errorf("желание не принадлежит текущему пользователю")
+		return usecase.ErrInvalidWish
 	}
-
-	// Проверяем, что желание можно редактировать (не завершено и не удалено)
 	if wish.Status == "complete" || wish.Status == "deleted" {
-		return fmt.Errorf("нельзя редактировать завершенное или удаленное желание")
+		return usecase.ErrInvalidWish
 	}
-
-	// Проверяем валидность нового изображения
 	staticFile, err := s.staticRepo.GetByID(ctx, req.Image)
 	if err != nil {
-		return fmt.Errorf("изображение не найдено: %w", err)
+		return usecase.ErrStaticFileNotFound
 	}
-
 	if staticFile.Type != "wish" {
-		return fmt.Errorf("изображение должно быть типа 'wish'")
+		return usecase.ErrInvalidWish
 	}
-
 	if staticFile.UploaderUUID != req.UserUUID {
-		return fmt.Errorf("изображение не принадлежит текущему пользователю")
+		return usecase.ErrInvalidWish
 	}
-
-	// Обновляем поля
 	wish.Image = req.Image
 	wish.IsPriority = req.IsPriority
 	wish.UpdatedAt = time.Now()
-
-	// Сохраняем изменения
 	err = s.wishRepo.Update(ctx, wish)
 	if err != nil {
-		return fmt.Errorf("ошибка обновления желания: %w", err)
+		if errors.Is(err, repo.ErrWishNotFound) {
+			return usecase.ErrWishNotFound
+		}
+		return err
 	}
-
 	return nil
 }
 
 func (s *WishService) GetWishes(ctx context.Context, streamerUUID string) ([]entity.WishResponse, error) {
-	// Получаем все желания стримера
 	wishes, err := s.wishRepo.GetByStreamerUUID(ctx, streamerUUID)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка получения желаний: %w", err)
+		return nil, err
 	}
-
-	// Конвертируем в response формат
 	responses := make([]entity.WishResponse, 0, len(wishes))
 	for _, wish := range wishes {
-		// Показываем только активные желания
 		if wish.Status != "active" {
 			continue
 		}
-
 		response := entity.WishResponse{
 			UUID:        wish.UUID,
 			WishURL:     wish.WishURL,
@@ -254,10 +228,6 @@ func (s *WishService) GetWishes(ctx context.Context, streamerUUID string) ([]ent
 		}
 		responses = append(responses, response)
 	}
-
-	// Сортируем: сначала приоритетные, затем по дате создания (новые сначала)
-	s.sortWishes(responses, wishes)
-
 	return responses, nil
 }
 

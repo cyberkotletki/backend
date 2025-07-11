@@ -4,12 +4,14 @@ import (
 	abiDescription "backend/internal/abi"
 	"backend/internal/delivery"
 	"backend/internal/repo/mongodb"
+	redisrepo "backend/internal/repo/redis"
 	"backend/internal/repo/s3"
 	"backend/internal/usecase/service"
 	"backend/pkg/jwt"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"log"
 	"net/http"
 	"os"
@@ -58,6 +60,10 @@ type Config struct {
 
 	// Telegram Bot
 	TelegramBotToken string
+
+	// Redis
+	RedisAddr     string
+	RedisPassword string
 }
 
 func main() {
@@ -110,7 +116,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("❌ Ошибка подключения к Polygon: %v", err)
 	}
-	log.Printf("✅ Polygon подключен к сети Chain ID: %d", config.ChainID)
+	log.Printf("✅ Polygon подключен к сети Chain UUID: %d", config.ChainID)
 	log.Printf("📋 Контракт: %s", contractAddr.Hex())
 
 	// Инициализация репозиториев
@@ -131,6 +137,16 @@ func main() {
 		log.Fatalf("❌ Ошибка инициализации S3 репозитория: %v", err)
 	}
 	staticRepo := mongodb.NewStaticFileRepository(db)
+
+	// --- Redis для Donation Events ---
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     config.RedisAddr,
+		Password: config.RedisPassword,
+		DB:       0,
+	})
+	donationEventRepo := redisrepo.NewDonationEventRepo(redisClient, "donation_events")
+	donationEventUC := service.NewDonationEventUsecase(donationEventRepo)
+	donationEventHandler := delivery.NewDonationEventSSEHandler(donationEventUC)
 
 	log.Println("✅ Репозитории инициализированы")
 
@@ -170,10 +186,16 @@ func main() {
 	// JWT middleware
 	jwtMiddleware := delivery.NewJWTMiddleware(jwtService)
 
+	// Группа /api
+	api := e.Group("/api")
+
 	// Регистрация маршрутов через методы Configure
-	userHandler.Configure(e, jwtMiddleware)
-	wishHandler.Configure(e, jwtMiddleware)
-	staticHandler.Configure(e, jwtMiddleware)
+	userHandler.Configure(api, jwtMiddleware)
+	wishHandler.Configure(api, jwtMiddleware)
+	staticHandler.Configure(api, jwtMiddleware)
+
+	// Регистрация SSE endpoint для донатов
+	donationEventHandler.Configure(api)
 
 	// Health check для Consul
 	e.GET("/health", func(c echo.Context) error {
@@ -295,6 +317,10 @@ func loadConfigFromVault(client *vaultapi.Client) (*Config, error) {
 	config.StaticBaseURL = getStringFromVault(data, "static_base_url", "http://localhost:8080")
 	config.TelegramBotToken = getStringFromVault(data, "telegram_bot_token", "")
 
+	// Redis
+	config.RedisAddr = getStringFromVault(data, "redis_addr", "localhost:6379")
+	config.RedisPassword = getStringFromVault(data, "redis_password", "")
+
 	return config, nil
 }
 
@@ -310,12 +336,14 @@ func loadConfigFromEnv() *Config {
 		MinIOBucket:      getEnv("MINIO_BUCKET", "donly-static"),
 		MinIOUseSSL:      false,
 		PolygonRPCURL:    getEnv("POLYGON_RPC_URL", "https://rpc-amoy.polygon.technology"), // Polygon Amoy testnet
-		ChainID:          80002,                                                            // Polygon Amoy testnet Chain ID
+		ChainID:          80002,                                                            // Polygon Amoy testnet Chain UUID
 		ContractAddress:  getEnv("CONTRACT_ADDRESS", ""),
 		PrivateKey:       getEnv("PRIVATE_KEY", ""),
 		PollInterval:     15 * time.Second,
 		StaticBaseURL:    getEnv("STATIC_BASE_URL", "http://localhost:8080"),
 		TelegramBotToken: getEnv("TELEGRAM_BOT_TOKEN", ""),
+		RedisAddr:        getEnv("REDIS_ADDR", "localhost:6379"),
+		RedisPassword:    getEnv("REDIS_PASSWORD", ""),
 	}
 }
 
@@ -378,12 +406,12 @@ func initPolygon(config *Config) (*ethclient.Client, abi.ABI, common.Address, er
 
 	_, err = client.ChainID(ctx)
 	if err != nil {
-		return nil, abi.ABI{}, common.Address{}, fmt.Errorf("ошибка получения Chain ID: %w", err)
+		return nil, abi.ABI{}, common.Address{}, fmt.Errorf("ошибка получения Chain UUID: %w", err)
 	}
 
 	/*
 		if chainID.Int64() != config.ChainID {
-			return nil, abi.ABI{}, common.Address{}, fmt.Errorf("неожиданный Chain ID: получен %d, ожидался %d", chainID.Int64(), config.ChainID)
+			return nil, abi.ABI{}, common.Address{}, fmt.Errorf("неожиданный Chain UUID: получен %d, ожидался %d", chainID.Int64(), config.ChainID)
 		}
 	*/
 

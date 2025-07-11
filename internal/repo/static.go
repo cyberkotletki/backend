@@ -3,7 +3,15 @@ package repo
 import (
 	"backend/internal/entity"
 	"context"
+	"errors"
 	"io"
+)
+
+var (
+	ErrStaticFileNotFound  = errors.New("static file not found")
+	ErrFileStorageNotFound = errors.New("file not found in storage")
+	ErrFileStorageUpload   = errors.New("file upload error")
+	ErrFileStorageDelete   = errors.New("file delete error")
 )
 
 type StaticFileRepository interface {

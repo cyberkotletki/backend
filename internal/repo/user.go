@@ -3,7 +3,11 @@ package repo
 import (
 	"backend/internal/entity"
 	"context"
+	"errors"
 )
+
+var ErrUserNotFound = errors.New("user not found")
+var ErrUserAlreadyExists = errors.New("user already exists")
 
 type UserRepository interface {
 	Register(ctx context.Context, user *entity.User) (string, error)

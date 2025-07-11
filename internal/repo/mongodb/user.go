@@ -7,6 +7,7 @@ import (
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -15,8 +16,22 @@ type userRepository struct {
 }
 
 func NewUserRepository(db *mongo.Database) repo.UserRepository {
+	col := db.Collection("users")
+	// Создаём уникальные индексы для telegram_id и polygon_wallet
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_, _ = col.Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{
+			Keys:    bson.D{{Key: "telegram_id", Value: 1}},
+			Options: options.Index().SetUnique(true).SetSparse(true),
+		},
+		{
+			Keys:    bson.D{{Key: "polygon_wallet", Value: 1}},
+			Options: options.Index().SetUnique(true).SetSparse(true),
+		},
+	})
 	return &userRepository{
-		col: db.Collection("users"),
+		col: col,
 	}
 }
 
@@ -25,6 +40,10 @@ func (r *userRepository) Register(ctx context.Context, user *entity.User) (strin
 	user.UpdatedAt = user.CreatedAt
 	_, err := r.col.InsertOne(ctx, user)
 	if err != nil {
+		// Обработка ошибки уникальности
+		if mongo.IsDuplicateKeyError(err) {
+			return "", errors.Join(repo.ErrUserAlreadyExists, err)
+		}
 		return "", err
 	}
 	return user.UUID, nil
@@ -39,7 +58,7 @@ func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
 		return err
 	}
 	if res.MatchedCount == 0 {
-		return errors.New("user not found")
+		return repo.ErrUserNotFound
 	}
 	return nil
 }
@@ -50,7 +69,7 @@ func (r *userRepository) GetByUUID(ctx context.Context, uuid string) (*entity.Us
 	err := r.col.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, nil
+			return nil, repo.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -63,7 +82,7 @@ func (r *userRepository) GetByTelegramID(ctx context.Context, telegramID string)
 	err := r.col.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, nil
+			return nil, repo.ErrUserNotFound
 		}
 		return nil, err
 	}

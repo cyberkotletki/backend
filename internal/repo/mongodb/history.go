@@ -4,7 +4,6 @@ import (
 	"backend/internal/entity"
 	"backend/internal/repo"
 	"context"
-	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -44,9 +43,6 @@ func (r *historyRepository) GetByStreamerUUID(ctx context.Context, streamerUUID 
 	}
 	if err := cursor.Err(); err != nil {
 		return nil, err
-	}
-	if len(historyList) == 0 {
-		return nil, errors.New("no history found")
 	}
 	return historyList, nil
 }

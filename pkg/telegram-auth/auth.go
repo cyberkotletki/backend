@@ -134,7 +134,7 @@ func parseUserData(userDataStr string) (*User, error) {
 
 	// Проверяем обязательные поля
 	if user.ID == 0 {
-		return nil, fmt.Errorf("user ID is missing or invalid")
+		return nil, fmt.Errorf("user UUID is missing or invalid")
 	}
 
 	if user.FirstName == "" {

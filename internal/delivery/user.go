@@ -5,6 +5,7 @@ import (
 	"backend/internal/usecase"
 	"backend/pkg/jwt"
 	telegramauth "backend/pkg/telegram-auth"
+	"errors"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
@@ -21,7 +22,7 @@ func NewUserHandler(userUC usecase.UserUsecase, jwtService *jwt.JWT, botToken st
 }
 
 // Configure настраивает роуты user
-func (h *UserHandler) Configure(e *echo.Echo, jwtMiddleware echo.MiddlewareFunc) {
+func (h *UserHandler) Configure(e *echo.Group, jwtMiddleware echo.MiddlewareFunc) {
 	g := e.Group("/user")
 	g.POST("/streamer/register", h.Register)
 	g.POST("/streamer/login", h.Login)
@@ -45,8 +46,35 @@ func (h *UserHandler) Register(c echo.Context) error {
 	req.TelegramID = strconv.FormatInt(user.ID, 10)
 	streamerUUID, err := h.UserUC.Register(c.Request().Context(), req)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		switch {
+		case errors.Is(err, usecase.ErrInvalidRegisterRequest):
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid register request")
+		case errors.Is(err, usecase.ErrUserAlreadyExists):
+			return echo.NewHTTPError(http.StatusConflict, "user already exists")
+		default:
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal error")
+		}
 	}
+	// Получаем пользователя по telegram_id для генерации токена
+	dbUser, err := h.UserUC.GetByTelegramID(c.Request().Context(), req.TelegramID)
+	if err != nil || dbUser == nil {
+		c.Logger().Error("user not found after register")
+		return echo.NewHTTPError(http.StatusInternalServerError, "user not found after register")
+	}
+	token, err := h.JWTService.GenerateToken(dbUser.UUID, 30*24*60*60) // 30 дней
+	if err != nil {
+		c.Logger().Error("failed to generate JWT token:", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to generate token")
+	}
+	cookie := new(http.Cookie)
+	cookie.Name = "jwt"
+	cookie.Value = token
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.SameSite = http.SameSiteLaxMode
+	cookie.MaxAge = 30 * 24 * 60 * 60
+	c.SetCookie(cookie)
 	return c.JSON(http.StatusOK, entity.RegisterUserResponse{StreamerUUID: streamerUUID})
 }
 
@@ -58,7 +86,15 @@ func (h *UserHandler) UpdateProfile(c echo.Context) error {
 	}
 	req.UUID = uuid
 	if err := h.UserUC.UpdateProfile(c.Request().Context(), req); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		switch {
+		case errors.Is(err, usecase.ErrInvalidUpdateRequest):
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid update request")
+		case errors.Is(err, usecase.ErrUserNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, "user not found")
+		default:
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal error")
+		}
 	}
 	return c.NoContent(http.StatusNoContent)
 }
@@ -105,6 +141,7 @@ func (h *UserHandler) Login(c echo.Context) error {
 	}
 	token, err := h.JWTService.GenerateToken(dbUser.UUID, 30*24*60*60) // 30 дней
 	if err != nil {
+		c.Logger().Error("failed to generate JWT token:", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to generate token")
 	}
 	cookie := new(http.Cookie)

@@ -3,6 +3,7 @@ package delivery
 import (
 	"backend/internal/entity"
 	"backend/internal/usecase"
+	"errors"
 	"github.com/labstack/echo/v4"
 	"io"
 	"net/http"
@@ -17,7 +18,7 @@ func NewStaticHandler(staticUC usecase.StaticUsecase) *StaticHandler {
 	return &StaticHandler{StaticUC: staticUC}
 }
 
-func (h *StaticHandler) Configure(e *echo.Echo, jwtMiddleware echo.MiddlewareFunc) {
+func (h *StaticHandler) Configure(e *echo.Group, jwtMiddleware echo.MiddlewareFunc) {
 	g := e.Group("/static")
 	g.POST("/upload", h.Upload, jwtMiddleware)
 	g.GET(":id", h.GetFile)
@@ -49,9 +50,23 @@ func (h *StaticHandler) Upload(c echo.Context) error {
 	}
 	id, err := h.StaticUC.Upload(c.Request().Context(), typeStr, readSeeker, fileHeader.Header.Get("Content-Type"), uploader)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		switch {
+		case errors.Is(err, usecase.ErrStaticInvalidType):
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid file type")
+		case errors.Is(err, usecase.ErrStaticImageTooSmall):
+			return echo.NewHTTPError(http.StatusBadRequest, "image too small")
+		case errors.Is(err, usecase.ErrStaticFileTooLarge):
+			return echo.NewHTTPError(http.StatusBadRequest, "file too large")
+		case errors.Is(err, usecase.ErrStaticFileEmpty):
+			return echo.NewHTTPError(http.StatusBadRequest, "file is empty")
+		case errors.Is(err, usecase.ErrStaticFileUpload):
+			return echo.NewHTTPError(http.StatusBadRequest, "file upload error")
+		default:
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal error")
+		}
 	}
-	return c.JSON(http.StatusOK, entity.UploadStaticResponse{ID: id})
+	return c.JSON(http.StatusOK, entity.UploadStaticResponse{UUID: id})
 }
 
 func (h *StaticHandler) GetFile(c echo.Context) error {
@@ -61,7 +76,13 @@ func (h *StaticHandler) GetFile(c echo.Context) error {
 	}
 	file, err := h.StaticUC.GetFile(c.Request().Context(), id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		switch {
+		case errors.Is(err, usecase.ErrStaticFileNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, "file not found")
+		default:
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal error")
+		}
 	}
 	defer func() {
 		if closer, ok := file.(io.Closer); ok {

@@ -3,6 +3,14 @@ package usecase
 import (
 	"backend/internal/entity"
 	"context"
+	"errors"
+)
+
+var (
+	ErrUserNotFound           = errors.New("user not found")
+	ErrUserAlreadyExists      = errors.New("user already exists")
+	ErrInvalidRegisterRequest = errors.New("invalid register request")
+	ErrInvalidUpdateRequest   = errors.New("invalid update request")
 )
 
 type UserUsecase interface {

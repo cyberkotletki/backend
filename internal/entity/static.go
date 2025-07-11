@@ -10,7 +10,7 @@ type StaticFile struct {
 }
 
 type UploadStaticResponse struct {
-	ID string `json:"id"`
+	UUID string `json:"uuid"`
 }
 
 type StaticFileResponse struct {
