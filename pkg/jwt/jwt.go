@@ -24,7 +24,8 @@ func New(secret string) *JWT {
 }
 
 // GenerateToken создает JWT-токен для пользователя
-func (j *JWT) GenerateToken(uuid string, ttl time.Duration) (string, error) {
+func (j *JWT) GenerateToken(uuid string, ttlSeconds int) (string, error) {
+	ttl := time.Duration(ttlSeconds) * time.Second
 	claims := Claims{
 		UUID: uuid,
 		RegisteredClaims: jwt.RegisteredClaims{
