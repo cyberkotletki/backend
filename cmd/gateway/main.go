@@ -64,6 +64,9 @@ type Config struct {
 	// Redis
 	RedisAddr     string
 	RedisPassword string
+
+	// CORS
+	AllowedOrigins []string
 }
 
 func main() {
@@ -181,7 +184,12 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     config.AllowedOrigins,
+		AllowCredentials: true,
+		AllowMethods:     []string{echo.GET, echo.POST, echo.PUT, echo.DELETE, echo.OPTIONS},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, "X-Requested-With"},
+	}))
 
 	// JWT middleware
 	jwtMiddleware := delivery.NewJWTMiddleware(jwtService)
@@ -321,6 +329,20 @@ func loadConfigFromVault(client *vaultapi.Client) (*Config, error) {
 	config.RedisAddr = getStringFromVault(data, "redis_addr", "localhost:6379")
 	config.RedisPassword = getStringFromVault(data, "redis_password", "")
 
+	// CORS
+	if origins, ok := data["allowed_origins"]; ok {
+		if arr, ok := origins.([]interface{}); ok {
+			for _, v := range arr {
+				if s, ok := v.(string); ok {
+					config.AllowedOrigins = append(config.AllowedOrigins, s)
+				}
+			}
+		}
+	}
+	if len(config.AllowedOrigins) == 0 {
+		config.AllowedOrigins = []string{"*"}
+	}
+
 	return config, nil
 }
 
@@ -344,6 +366,7 @@ func loadConfigFromEnv() *Config {
 		TelegramBotToken: getEnv("TELEGRAM_BOT_TOKEN", ""),
 		RedisAddr:        getEnv("REDIS_ADDR", "localhost:6379"),
 		RedisPassword:    getEnv("REDIS_PASSWORD", ""),
+		AllowedOrigins:   []string{"*"},
 	}
 }
 
