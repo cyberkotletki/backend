@@ -60,7 +60,7 @@ func (r *wishRepository) GetByUUID(ctx context.Context, uuid string) (*entity.Wi
 
 func (r *wishRepository) GetByStreamerUUID(ctx context.Context, streamerUUID string) ([]*entity.Wish, error) {
 	filter := bson.M{"streamer_uuid": streamerUUID}
-	findOptions := options.Find().SetSort(bson.M{"is_priority": -1, "created_at": -1})
+	findOptions := options.Find().SetSort(bson.D{{"is_priority", -1}, {"created_at", -1}})
 	cursor, err := r.col.Find(ctx, filter, findOptions)
 	if err != nil {
 		return nil, err
