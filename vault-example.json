@@ -14,5 +14,6 @@
   "static_base_url": "http://localhost:8080",
   "telegram_bot_token": "your_telegram_bot_token_here",
   "redis_addr": "localhost:6379",
-  "redis_password": ""
+  "redis_password": "",
+  "allowed_origins": ["*"]
 }
